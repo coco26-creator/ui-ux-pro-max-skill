@@ -24,6 +24,7 @@ uipro init --ai qoder       # Qoder
 uipro init --ai gemini      # Gemini CLI
 uipro init --ai trae        # Trae
 uipro init --ai opencode    # OpenCode
+uipro init --ai continue    # Continue (Skills)
 uipro init --ai all         # All assistants
 
 # Options

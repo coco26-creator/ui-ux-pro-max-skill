@@ -46,6 +46,9 @@ export function detectAIType(cwd: string = process.cwd()): DetectionResult {
   if (existsSync(join(cwd, '.opencode'))) {
     detected.push('opencode');
   }
+  if (existsSync(join(cwd, '.continue'))) {
+    detected.push('continue');
+  }
 
   // Suggest based on what's detected
   let suggested: AIType | null = null;
@@ -84,6 +87,8 @@ export function getAITypeDescription(aiType: AIType): string {
       return 'Trae (.trae/skills/ + .shared/)';
     case 'opencode':
       return 'OpenCode (.opencode/skills/ + .shared/)';
+    case 'continue':
+      return 'Continue (.continue/skills/)';
     case 'all':
       return 'All AI assistants';
   }

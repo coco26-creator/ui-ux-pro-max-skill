@@ -1,5 +1,5 @@
 # UI UX Pro Max
-
+ 
 <p align="center">
   <a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/releases"><img src="https://img.shields.io/github/v/release/nextlevelbuilder/ui-ux-pro-max-skill?style=for-the-badge&color=blue" alt="GitHub Release"></a>
   <img src="https://img.shields.io/badge/reasoning_rules-100-green?style=for-the-badge" alt="100 Reasoning Rules">
@@ -183,6 +183,7 @@ uipro init --ai roocode     # Roo Code
 uipro init --ai gemini      # Gemini CLI
 uipro init --ai trae        # Trae
 uipro init --ai opencode    # OpenCode
+uipro init --ai continue    # Continue (Skills)
 uipro init --ai all         # All assistants
 ```
 
@@ -211,6 +212,7 @@ Copy the appropriate folders to your project:
 | Roo Code       | `.roo/rules/ui-ux-pro-max.md` + `.shared/ui-ux-pro-max/`             |
 | Gemini CLI     | `.gemini/skills/ui-ux-pro-max/` + `.shared/ui-ux-pro-max/`           |
 | Trae           | `.trae/skills/ui-ux-pro-max/` + `.shared/ui-ux-pro-max/`             |
+| Continue       | `.continue/skills/ui-ux-pro-max/`                                   |
 
 ## Prerequisites
 
@@ -270,6 +272,14 @@ The skill activates automatically for UI/UX requests. You can also invoke it exp
 
 ```
 $ui-ux-pro-max Build a landing page for my SaaS product
+```
+
+### Continue
+
+The skill activates automatically for UI/UX requests once installed to `.continue/skills/`:
+
+```
+Build a landing page for my SaaS product
 ```
 
 ### Qoder
@@ -342,6 +352,8 @@ Just mention your preferred stack in the prompt, or let it default to HTML + Tai
 ## Design System Command (Advanced)
 
 For direct access to the design system generator:
+
+> Note: If you installed via Continue, replace `.claude/skills/` with `.continue/skills/` in the commands below.
 
 ```bash
 # Generate design system with ASCII output
