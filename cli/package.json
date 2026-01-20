@@ -11,9 +11,9 @@
     "assets"
   ],
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target node",
-    "dev": "bun run src/index.ts",
-    "prepublishOnly": "bun run build"
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external",
+    "dev": "node --loader ts-node/esm src/index.ts",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "ui",
@@ -34,8 +34,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "commander": "^12.1.0",
     "chalk": "^5.3.0",
+    "commander": "^12.1.0",
     "ora": "^8.1.1",
     "prompts": "^2.4.2"
   },
@@ -43,6 +43,7 @@
     "@types/bun": "^1.1.14",
     "@types/node": "^22.10.1",
     "@types/prompts": "^2.4.9",
+    "esbuild": "^0.27.2",
     "typescript": "^5.7.2"
   }
 }
