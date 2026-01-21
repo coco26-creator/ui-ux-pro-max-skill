@@ -53,7 +53,7 @@ export function detectAIType(cwd: string = process.cwd()): DetectionResult {
   // Suggest based on what's detected
   let suggested: AIType | null = null;
   if (detected.length === 1) {
-    suggested = detected[0];
+    suggested = detected[0] ?? null;
   } else if (detected.length > 1) {
     suggested = 'all';
   }
