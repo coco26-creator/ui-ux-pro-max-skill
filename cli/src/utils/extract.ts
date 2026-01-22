@@ -38,6 +38,7 @@ export async function copyFolders(
   aiType: AIType
 ): Promise<string[]> {
   const copiedFolders: string[] = [];
+  const skippedFolders: string[] = [];
 
   const foldersToCopy = aiType === 'all'
     ? Object.values(AI_FOLDERS).flat()
@@ -53,6 +54,7 @@ export async function copyFolders(
     // Check if source folder exists
     const sourceExists = await exists(sourcePath);
     if (!sourceExists) {
+      skippedFolders.push(folder);
       continue;
     }
 
@@ -80,8 +82,14 @@ export async function copyFolders(
         copiedFolders.push(folder);
       } catch {
         // Skip if copy fails
+        skippedFolders.push(folder);
       }
     }
+  }
+
+  // Log skipped folders if any (for debugging)
+  if (skippedFolders.length > 0 && process.env.DEBUG) {
+    console.warn(`Skipped folders (not found in source): ${skippedFolders.join(', ')}`);
   }
 
   return copiedFolders;
@@ -111,7 +119,7 @@ async function findExtractedRoot(tempDir: string): Promise<string> {
   const dirs = entries.filter(e => e.isDirectory());
 
   // If there's exactly one directory, it's likely the extracted root
-  if (dirs.length === 1) {
+  if (dirs.length === 1 && dirs[0]) {
     return join(tempDir, dirs[0].name);
   }
 

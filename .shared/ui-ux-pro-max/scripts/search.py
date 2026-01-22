@@ -15,11 +15,12 @@ Persistence (Master + Overrides pattern):
 """
 
 import argparse
+from typing import Dict, Any
 from core import CSV_CONFIG, AVAILABLE_STACKS, MAX_RESULTS, search, search_stack
 from design_system import generate_design_system, persist_design_system
 
 
-def format_output(result):
+def format_output(result: Dict[str, Any]) -> str:
     """Format results for Claude consumption (token-optimized)"""
     if "error" in result:
         return f"Error: {result['error']}"
