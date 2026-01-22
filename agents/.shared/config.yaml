@@ -1,0 +1,13 @@
+# .shared - Shared resources for agents that don't bundle their own data/scripts
+# This folder is used by: cursor, windsurf, copilot, kiro, roocode, trae, opencode, qoder, gemini, agent
+
+output: ".shared/ui-ux-pro-max"
+
+files:
+  - from: source/data
+    to: data
+    type: copy
+
+  - from: source/scripts
+    to: scripts
+    type: copy

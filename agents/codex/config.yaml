@@ -1,0 +1,18 @@
+# Codex - bundles its own data/scripts (similar to Claude)
+
+output: ".codex/skills/ui-ux-pro-max"
+
+files:
+  - from: source/data
+    to: data
+    type: copy
+
+  - from: source/scripts
+    to: scripts
+    type: copy
+
+  - from: source/skill.md
+    to: SKILL.md
+    type: template
+    vars:
+      script_path: ".codex/skills/ui-ux-pro-max/scripts/search.py"

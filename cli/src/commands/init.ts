@@ -1,174 +1,146 @@
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import * as p from '@clack/prompts';
 import chalk from 'chalk';
-import ora from 'ora';
-import prompts from 'prompts';
-import type { AIType } from '../types/index.js';
-import { AI_TYPES } from '../types/index.js';
-import { copyFolders, installFromZip, createTempDir, cleanup } from '../utils/extract.js';
-import { detectAIType, getAITypeDescription } from '../utils/detect.js';
-import { logger } from '../utils/logger.js';
-import {
-  getLatestRelease,
-  getAssetUrl,
-  downloadRelease,
-  GitHubRateLimitError,
-  GitHubDownloadError,
-} from '../utils/github.js';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-// From dist/index.js -> ../assets (one level up to cli/, then assets/)
-const ASSETS_DIR = join(__dirname, '..', 'assets');
+import { getRepoSource, RepoSource } from '../utils/cache.js';
+import { agents, detectInstalledAgents, getAllAgentNames } from '../utils/agents.js';
+import { installAgent } from '../utils/installer.js';
 
 interface InitOptions {
-  ai?: AIType;
-  force?: boolean;
-  offline?: boolean;
-}
-
-/**
- * Try to install from GitHub release
- * Returns the copied folders if successful, null if failed
- */
-async function tryGitHubInstall(
-  targetDir: string,
-  aiType: AIType,
-  spinner: ReturnType<typeof ora>
-): Promise<string[] | null> {
-  let tempDir: string | null = null;
-
-  try {
-    spinner.text = 'Fetching latest release from GitHub...';
-    const release = await getLatestRelease();
-    const assetUrl = getAssetUrl(release);
-
-    if (!assetUrl) {
-      throw new GitHubDownloadError('No ZIP asset found in latest release');
-    }
-
-    spinner.text = `Downloading ${release.tag_name}...`;
-    tempDir = await createTempDir();
-    const zipPath = join(tempDir, 'release.zip');
-
-    await downloadRelease(assetUrl, zipPath);
-
-    spinner.text = 'Extracting and installing files...';
-    const { copiedFolders, tempDir: extractedTempDir } = await installFromZip(
-      zipPath,
-      targetDir,
-      aiType
-    );
-
-    // Cleanup temp directory
-    await cleanup(extractedTempDir);
-
-    return copiedFolders;
-  } catch (error) {
-    // Cleanup temp directory on error
-    if (tempDir) {
-      await cleanup(tempDir);
-    }
-
-    if (error instanceof GitHubRateLimitError) {
-      spinner.warn('GitHub rate limit reached, using bundled assets...');
-      return null;
-    }
-
-    if (error instanceof GitHubDownloadError) {
-      spinner.warn('GitHub download failed, using bundled assets...');
-      return null;
-    }
-
-    // Network errors or other fetch failures
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      spinner.warn('Network error, using bundled assets...');
-      return null;
-    }
-
-    // Unknown errors - still fall back to bundled assets
-    spinner.warn('Download failed, using bundled assets...');
-    return null;
-  }
+  agent?: string;
+  yes?: boolean;
+  local?: string;
+  refresh?: boolean;
 }
 
 export async function initCommand(options: InitOptions): Promise<void> {
-  logger.title('UI/UX Pro Max Installer');
-
-  let aiType = options.ai;
-
-  // Auto-detect or prompt for AI type
-  if (!aiType) {
-    const { detected, suggested } = detectAIType();
-
-    if (detected.length > 0) {
-      logger.info(`Detected: ${detected.map(t => chalk.cyan(t)).join(', ')}`);
-    }
-
-    const response = await prompts({
-      type: 'select',
-      name: 'aiType',
-      message: 'Select AI assistant to install for:',
-      choices: AI_TYPES.map(type => ({
-        title: getAITypeDescription(type),
-        value: type,
-      })),
-      initial: suggested ? AI_TYPES.indexOf(suggested) : 0,
-    });
-
-    if (!response.aiType) {
-      logger.warn('Installation cancelled');
-      return;
-    }
-
-    aiType = response.aiType as AIType;
-  }
-
-  logger.info(`Installing for: ${chalk.cyan(getAITypeDescription(aiType))}`);
-
-  const spinner = ora('Installing files...').start();
-  const cwd = process.cwd();
-  let copiedFolders: string[] = [];
-  let usedGitHub = false;
+  console.log();
+  p.intro(chalk.bgCyan.black(' UI/UX Pro Max '));
 
   try {
-    // Try GitHub download first (unless offline mode)
-    if (!options.offline) {
-      const githubResult = await tryGitHubInstall(cwd, aiType, spinner);
-      if (githubResult) {
-        copiedFolders = githubResult;
-        usedGitHub = true;
+    // Determine target agents
+    let targetAgents: string[];
+
+    if (options.agent) {
+      // Validate agent name
+      const validAgents = getAllAgentNames();
+      if (!validAgents.includes(options.agent)) {
+        p.log.error(`Invalid agent: ${options.agent}`);
+        p.log.info(`Valid agents: ${validAgents.join(', ')}`);
+        process.exit(1);
+      }
+      targetAgents = [options.agent];
+      p.log.info(`Installing for: ${chalk.cyan(agents[options.agent].displayName)}`);
+    } else {
+      // Detect installed agents
+      const spinner = p.spinner();
+      spinner.start('Detecting installed agents...');
+      const installedAgents = detectInstalledAgents();
+      spinner.stop(`Detected ${installedAgents.length} agent(s)`);
+
+      if (installedAgents.length > 0 && !options.yes) {
+        p.log.info(`Found: ${installedAgents.map(a => chalk.cyan(agents[a].displayName)).join(', ')}`);
+      }
+
+      if (options.yes) {
+        // Auto mode: install for detected agents, or all if none detected
+        targetAgents = installedAgents.length > 0 ? installedAgents : getAllAgentNames();
+      } else {
+        // Interactive mode: let user select
+        const allAgentChoices = Object.entries(agents).map(([key, config]) => ({
+          value: key,
+          label: config.displayName,
+          hint: installedAgents.includes(key) ? 'detected' : undefined,
+        }));
+
+        const selected = await p.multiselect({
+          message: 'Select agents to install for:',
+          options: allAgentChoices,
+          initialValues: installedAgents.length > 0 ? installedAgents : ['claude'],
+          required: true,
+        });
+
+        if (p.isCancel(selected)) {
+          p.cancel('Installation cancelled');
+          process.exit(0);
+        }
+
+        targetAgents = selected as string[];
       }
     }
 
-    // Fall back to bundled assets if GitHub failed or offline mode
-    if (!usedGitHub) {
-      spinner.text = 'Installing from bundled assets...';
-      copiedFolders = await copyFolders(ASSETS_DIR, cwd, aiType);
+    if (targetAgents.length === 0) {
+      p.log.error('No agents selected');
+      process.exit(1);
     }
 
-    spinner.succeed(usedGitHub ? 'Installed from GitHub release!' : 'Installed from bundled assets!');
+    // Get repo source (from cache, GitHub, or local)
+    const sourceSpinner = p.spinner();
+    sourceSpinner.start('Loading skill data...');
+    
+    let source: RepoSource;
+    try {
+      source = await getRepoSource({
+        local: options.local,
+        forceRefresh: options.refresh,
+      });
+    } catch (error) {
+      sourceSpinner.stop('Failed to load skill data');
+      throw error;
+    }
+
+    if (source.isLocal) {
+      sourceSpinner.stop(`Using local: ${chalk.dim(source.path)}`);
+    } else if (source.fromCache && !source.isGitRepo) {
+      sourceSpinner.stop(`Using local cache ${chalk.cyan(source.version)} ${chalk.dim('(not a git repo)')}`);
+      p.log.warn(`Cache is not a git repo. Run ${chalk.cyan('uipro clear')} then ${chalk.cyan('uipro init')} to fetch from GitHub.`);
+    } else if (source.fromCache) {
+      sourceSpinner.stop(`Using cached version ${chalk.cyan(source.version)}`);
+    } else {
+      sourceSpinner.stop(`Downloaded version ${chalk.cyan(source.version)}`);
+    }
+
+    // Install for each agent
+    const installSpinner = p.spinner();
+    installSpinner.start('Installing skill...');
+
+    const cwd = process.cwd();
+    const allChanges: string[] = [];
+    const installedAgentNames: string[] = [];
+
+    for (const agentName of targetAgents) {
+      try {
+        const changes = await installAgent(source.path, cwd, agentName);
+        allChanges.push(...changes);
+        installedAgentNames.push(agents[agentName].displayName);
+      } catch (error) {
+        p.log.warn(`Failed to install for ${agents[agentName].displayName}: ${error}`);
+      }
+    }
+
+    installSpinner.stop('Installation complete');
 
     // Summary
     console.log();
-    logger.info('Installed folders:');
-    copiedFolders.forEach(folder => {
-      console.log(`  ${chalk.green('+')} ${folder}`);
-    });
-
-    console.log();
-    logger.success('UI/UX Pro Max installed successfully!');
-
-    // Next steps
-    console.log();
-    console.log(chalk.bold('Next steps:'));
-    console.log(chalk.dim('  1. Restart your AI coding assistant'));
-    console.log(chalk.dim('  2. Try: "Build a landing page for a SaaS product"'));
-    console.log();
-  } catch (error) {
-    spinner.fail('Installation failed');
-    if (error instanceof Error) {
-      logger.error(error.message);
+    p.log.success(chalk.green(`Installed for ${installedAgentNames.length} agent(s):`));
+    for (const name of installedAgentNames) {
+      p.log.message(`  ${chalk.green('✓')} ${name}`);
     }
+
+    console.log();
+    p.log.step('Installed files:');
+    const uniqueChanges = [...new Set(allChanges)];
+    for (const change of uniqueChanges.slice(0, 10)) {
+      p.log.message(`  ${chalk.dim(change)}`);
+    }
+    if (uniqueChanges.length > 10) {
+      p.log.message(`  ${chalk.dim(`... and ${uniqueChanges.length - 10} more`)}`);
+    }
+
+    console.log();
+    p.outro(chalk.green('Done! Restart your AI coding assistant to use the skill.'));
+
+  } catch (error) {
+    p.log.error(error instanceof Error ? error.message : 'Unknown error occurred');
+    p.outro(chalk.red('Installation failed'));
     process.exit(1);
   }
 }

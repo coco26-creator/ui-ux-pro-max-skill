@@ -1,95 +1,88 @@
-import { existsSync } from 'node:fs';
+import { access } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { AIType } from '../types/index.js';
 
-interface DetectionResult {
-  detected: AIType[];
-  suggested: AIType | null;
+const SKILL_MARKERS = [
+  '.claude/skills/ui-ux-pro-max',
+  '.cursor/commands/ui-ux-pro-max.md',
+  '.windsurf/workflows/ui-ux-pro-max.md',
+  '.github/prompts/ui-ux-pro-max.prompt.md',
+  '.kiro/steering/ui-ux-pro-max.md',
+  '.trae/skills/ui-ux-pro-max',
+  '.opencode/skills/ui-ux-pro-max',
+  '.codex/skills/ui-ux-pro-max',
+  '.gemini/skills/ui-ux-pro-max',
+  '.roo/commands/ui-ux-pro-max.md',
+  '.qoder/skills/ui-ux-pro-max',
+  '.continue/skills/ui-ux-pro-max',
+  '.codebuddy/commands/ui-ux-pro-max.md',
+  '.agent/workflows/ui-ux-pro-max',
+  '.shared/ui-ux-pro-max',
+];
+
+async function exists(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-export function detectAIType(cwd: string = process.cwd()): DetectionResult {
-  const detected: AIType[] = [];
-
-  if (existsSync(join(cwd, '.claude'))) {
-    detected.push('claude');
+/**
+ * Check if current directory has ui-ux-pro-max installed
+ * Returns list of installed agent markers
+ */
+export async function detectInstalledSkill(cwd: string): Promise<string[]> {
+  const installed: string[] = [];
+  
+  for (const marker of SKILL_MARKERS) {
+    if (await exists(join(cwd, marker))) {
+      installed.push(marker);
+    }
   }
-  if (existsSync(join(cwd, '.cursor'))) {
-    detected.push('cursor');
-  }
-  if (existsSync(join(cwd, '.windsurf'))) {
-    detected.push('windsurf');
-  }
-  if (existsSync(join(cwd, '.agent'))) {
-    detected.push('antigravity');
-  }
-  if (existsSync(join(cwd, '.github'))) {
-    detected.push('copilot');
-  }
-  if (existsSync(join(cwd, '.kiro'))) {
-    detected.push('kiro');
-  }
-  if (existsSync(join(cwd, '.codex'))) {
-    detected.push('codex');
-  }
-  if (existsSync(join(cwd, '.roo'))) {
-    detected.push('roocode');
-  }
-  if (existsSync(join(cwd, '.qoder'))) {
-    detected.push('qoder');
-  }
-  if (existsSync(join(cwd, '.gemini'))) {
-    detected.push('gemini');
-  }
-  if (existsSync(join(cwd, '.trae'))) {
-    detected.push('trae');
-  }
-  if (existsSync(join(cwd, '.opencode'))) {
-    detected.push('opencode');
-  }
-  if (existsSync(join(cwd, '.continue'))) {
-    detected.push('continue');
-  }
-
-  // Suggest based on what's detected
-  let suggested: AIType | null = null;
-  if (detected.length === 1) {
-    suggested = detected[0];
-  } else if (detected.length > 1) {
-    suggested = 'all';
-  }
-
-  return { detected, suggested };
+  
+  return installed;
 }
 
-export function getAITypeDescription(aiType: AIType): string {
-  switch (aiType) {
-    case 'claude':
-      return 'Claude Code (.claude/skills/)';
-    case 'cursor':
-      return 'Cursor (.cursor/commands/ + .shared/)';
-    case 'windsurf':
-      return 'Windsurf (.windsurf/workflows/ + .shared/)';
-    case 'antigravity':
-      return 'Antigravity (.agent/workflows/ + .shared/)';
-    case 'copilot':
-      return 'GitHub Copilot (.github/prompts/ + .shared/)';
-    case 'kiro':
-      return 'Kiro (.kiro/steering/ + .shared/)';
-    case 'codex':
-      return 'Codex (.codex/skills/)';
-    case 'roocode':
-      return 'RooCode (.roo/commands/ + .shared/)';
-    case 'qoder':
-      return 'Qoder (.qoder/rules/ + .shared/)';
-    case 'gemini':
-      return 'Gemini CLI (.gemini/skills/ + .shared/)';
-    case 'trae':
-      return 'Trae (.trae/skills/ + .shared/)';
-    case 'opencode':
-      return 'OpenCode (.opencode/skills/ + .shared/)';
-    case 'continue':
-      return 'Continue (.continue/skills/)';
-    case 'all':
-      return 'All AI assistants';
+/**
+ * Check if skill is installed in current directory
+ */
+export async function isSkillInstalled(cwd: string): Promise<boolean> {
+  const installed = await detectInstalledSkill(cwd);
+  return installed.length > 0;
+}
+
+/**
+ * Detect which agents are installed based on markers
+ */
+export async function detectInstalledAgentsFromMarkers(cwd: string): Promise<string[]> {
+  const markerToAgent: Record<string, string> = {
+    '.claude/skills/ui-ux-pro-max': 'claude',
+    '.cursor/commands/ui-ux-pro-max.md': 'cursor',
+    '.windsurf/workflows/ui-ux-pro-max.md': 'windsurf',
+    '.github/prompts/ui-ux-pro-max.prompt.md': 'copilot',
+    '.kiro/steering/ui-ux-pro-max.md': 'kiro',
+    '.trae/skills/ui-ux-pro-max': 'trae',
+    '.opencode/skills/ui-ux-pro-max': 'opencode',
+    '.codex/skills/ui-ux-pro-max': 'codex',
+    '.gemini/skills/ui-ux-pro-max': 'gemini',
+    '.roo/commands/ui-ux-pro-max.md': 'roocode',
+    '.qoder/skills/ui-ux-pro-max': 'qoder',
+    '.continue/skills/ui-ux-pro-max': 'continue',
+    '.codebuddy/commands/ui-ux-pro-max.md': 'codebuddy',
+    '.agent/workflows/ui-ux-pro-max': 'agent',
+  };
+  
+  const agents: string[] = [];
+  
+  for (const marker of SKILL_MARKERS) {
+    if (await exists(join(cwd, marker))) {
+      const agent = markerToAgent[marker];
+      if (agent && !agents.includes(agent)) {
+        agents.push(agent);
+      }
+    }
   }
+  
+  return agents;
 }

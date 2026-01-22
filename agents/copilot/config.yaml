@@ -1,0 +1,11 @@
+# GitHub Copilot - uses .shared for data/scripts
+
+output: ".github/prompts"
+depends_on: [.shared]
+
+files:
+  - from: source/skill.md
+    to: ui-ux-pro-max.prompt.md
+    type: template
+    vars:
+      script_path: ".shared/ui-ux-pro-max/scripts/search.py"

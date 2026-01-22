@@ -5,10 +5,8 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { initCommand } from './commands/init.js';
-import { versionsCommand } from './commands/versions.js';
-import { updateCommand } from './commands/update.js';
-import type { AIType } from './types/index.js';
-import { AI_TYPES } from './types/index.js';
+import { syncCommand } from './commands/sync.js';
+import { infoCommand, clearCommand } from './commands/info.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -18,46 +16,50 @@ const program = new Command();
 
 program
   .name('uipro')
-  .description('CLI to install UI/UX Pro Max skill for AI coding assistants')
+  .description('Install UI/UX Pro Max skill for AI coding assistants')
   .version(pkg.version);
 
 program
   .command('init')
   .description('Install UI/UX Pro Max skill to current project')
-  .option('-a, --ai <type>', `AI assistant type (${AI_TYPES.join(', ')})`)
-  .option('-f, --force', 'Overwrite existing files')
-  .option('-o, --offline', 'Skip GitHub download, use bundled assets only')
+  .option('-a, --agent <name>', 'Install for specific agent only')
+  .option('-y, --yes', 'Skip prompts and auto-detect agents')
+  .option('-l, --local <path>', 'Use local repo path (for development)')
+  .option('-r, --refresh', 'Force download latest version')
   .action(async (options) => {
-    if (options.ai && !AI_TYPES.includes(options.ai)) {
-      console.error(`Invalid AI type: ${options.ai}`);
-      console.error(`Valid types: ${AI_TYPES.join(', ')}`);
-      process.exit(1);
-    }
     await initCommand({
-      ai: options.ai as AIType | undefined,
-      force: options.force,
-      offline: options.offline,
+      agent: options.agent,
+      yes: options.yes,
+      local: options.local,
+      refresh: options.refresh,
     });
   });
 
 program
-  .command('versions')
-  .description('List available versions')
-  .action(versionsCommand);
+  .command('sync')
+  .description('Fetch latest version and sync installed skill')
+  .option('-l, --local <path>', 'Use local repo path (for development)')
+  .option('-y, --yes', 'Skip confirmation prompts')
+  .action(async (options) => {
+    await syncCommand({
+      local: options.local,
+      yes: options.yes,
+    });
+  });
 
 program
-  .command('update')
-  .description('Update UI/UX Pro Max to latest version')
-  .option('-a, --ai <type>', `AI assistant type (${AI_TYPES.join(', ')})`)
+  .command('info')
+  .description('Show cache information')
+  .action(async () => {
+    await infoCommand();
+  });
+
+program
+  .command('clear')
+  .description('Clear cached data')
+  .option('-y, --yes', 'Skip confirmation')
   .action(async (options) => {
-    if (options.ai && !AI_TYPES.includes(options.ai)) {
-      console.error(`Invalid AI type: ${options.ai}`);
-      console.error(`Valid types: ${AI_TYPES.join(', ')}`);
-      process.exit(1);
-    }
-    await updateCommand({
-      ai: options.ai as AIType | undefined,
-    });
+    await clearCommand({ yes: options.yes });
   });
 
 program.parse();

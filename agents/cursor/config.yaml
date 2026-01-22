@@ -1,0 +1,11 @@
+# Cursor - uses .shared for data/scripts
+
+output: ".cursor/commands"
+depends_on: [.shared]
+
+files:
+  - from: source/skill.md
+    to: ui-ux-pro-max.md
+    type: template
+    vars:
+      script_path: ".shared/ui-ux-pro-max/scripts/search.py"

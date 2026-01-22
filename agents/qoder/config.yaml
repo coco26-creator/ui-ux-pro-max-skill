@@ -1,0 +1,12 @@
+# Qoder - uses .shared for data/scripts
+# Qoder has both skills and rules folders
+
+output: ".qoder"
+depends_on: [.shared]
+
+files:
+  - from: source/skill.md
+    to: skills/ui-ux-pro-max/SKILL.md
+    type: template
+    vars:
+      script_path: ".shared/ui-ux-pro-max/scripts/search.py"

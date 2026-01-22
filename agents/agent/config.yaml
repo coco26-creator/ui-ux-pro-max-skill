@@ -1,0 +1,11 @@
+# Generic Agent (.agent folder) - uses .shared for data/scripts
+
+output: ".agent/workflows/ui-ux-pro-max"
+depends_on: [.shared]
+
+files:
+  - from: source/skill.md
+    to: SKILL.md
+    type: template
+    vars:
+      script_path: ".shared/ui-ux-pro-max/scripts/search.py"

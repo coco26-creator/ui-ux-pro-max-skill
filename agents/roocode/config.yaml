@@ -1,0 +1,16 @@
+# Roo Code - uses .shared for data/scripts
+# Roo has both commands and rules folders
+
+output: ".roo"
+depends_on: [.shared]
+
+files:
+  - from: source/skill.md
+    to: commands/ui-ux-pro-max.md
+    type: template
+    vars:
+      script_path: ".shared/ui-ux-pro-max/scripts/search.py"
+
+  - from: agents/roocode/rule.md
+    to: rules/ui-ux-pro-max.md
+    type: copy
