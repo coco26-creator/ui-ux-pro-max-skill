@@ -92,20 +92,19 @@ async function ensureYamlFrontmatter(filePath: string): Promise<void> {
 }
 
 /**
- * Transform paths in skill files from local to global
- * e.g., .shared/ui-ux-pro-max/ -> ~/.gemini/antigravity/skills/ui-ux-pro-max/
+ * Transform paths in skill files from local relative to global relative
+ * For global install, scripts/data are colocated, so we use ./scripts/ instead of ../../.shared/...
  */
-async function transformPathsToGlobal(filePath: string, globalBasePath: string): Promise<void> {
+async function transformPathsForGlobal(filePath: string): Promise<void> {
   try {
     let content = await readFile(filePath, 'utf-8');
 
-    // Replace .shared/ui-ux-pro-max/ with global path
-    const globalPath = globalBasePath.replace(homedir(), '~');
-    content = content.replace(/\.shared\/ui-ux-pro-max\//g, `${globalPath}/`);
+    // Replace relative paths like ../../.shared/ui-ux-pro-max/scripts/ with ./scripts/
+    // This works because in global install, scripts and data are in the same directory as SKILL.md
+    content = content.replace(/\.\.\/\.\.\/\.shared\/ui-ux-pro-max\//g, './');
 
-    // Also update relative script paths in Python commands
-    // e.g., python3 .shared/ui-ux-pro-max/scripts/ -> python3 ~/.../scripts/
-    content = content.replace(/python3?\s+\.shared\/ui-ux-pro-max\//g, `python3 ${globalPath}/`);
+    // Also handle any direct .shared/ references
+    content = content.replace(/\.shared\/ui-ux-pro-max\//g, './');
 
     await writeFile(filePath, content, 'utf-8');
   } catch {
@@ -328,8 +327,8 @@ export async function initCommand(options: InitOptions): Promise<void> {
         await ensureYamlFrontmatter(skillEntryPath);
       }
 
-      // Transform paths from local to global
-      await transformPathsToGlobal(skillEntryPath, targetDir);
+      // Transform paths from local relative to global relative
+      await transformPathsForGlobal(skillEntryPath);
     }
 
     spinner.succeed(usedGitHub ? 'Installed from GitHub release!' : 'Installed from bundled assets!');
