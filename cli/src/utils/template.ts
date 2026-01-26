@@ -33,6 +33,7 @@ const AI_TO_PLATFORM: Record<string, string> = {
   antigravity: 'agent',
   copilot: 'copilot',
   kiro: 'kiro',
+  kilocode: 'kilocode',
   opencode: 'opencode',
   roocode: 'roocode',
   codex: 'codex',
