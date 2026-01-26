@@ -53,8 +53,7 @@ cli/                              # CLI installer (uipro-cli on npm)
 
 .claude/skills/ui-ux-pro-max/     # Claude Code skill (symlinks to src/)
 .shared/ui-ux-pro-max/            # Symlink to src/ui-ux-pro-max/
-.cursor/, .windsurf/, .agent/, .github/, .kiro/, .opencode/, .roo/
-                                  # Reference-only folders (use .shared/ for data)
+.claude-plugin/                   # Claude Marketplace publishing
 ```
 
 The search engine uses BM25 ranking combined with regex matching. Domain auto-detection is available when `--domain` is omitted.

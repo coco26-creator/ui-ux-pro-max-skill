@@ -71,7 +71,7 @@ export function getAITypeDescription(aiType: AIType): string {
     case 'cursor':
       return 'Cursor (.cursor/commands/ + .shared/)';
     case 'windsurf':
-      return 'Windsurf (.windsurf/workflows/ + .shared/)';
+      return 'Windsurf (.windsurf/skills/ + .shared/)';
     case 'antigravity':
       return 'Antigravity (.agent/skills/)';
     case 'copilot':
