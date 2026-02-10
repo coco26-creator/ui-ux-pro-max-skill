@@ -16,6 +16,7 @@ import {
   GitHubRateLimitError,
   GitHubDownloadError,
 } from '../utils/github.js';
+import { addPythonGitignore } from '../utils/gitignore.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // From dist/index.js -> ../assets (one level up to cli/, then assets/)
@@ -190,6 +191,17 @@ export async function initCommand(options: InitOptions): Promise<void> {
 
     console.log();
     logger.success('UI/UX Pro Max installed successfully!');
+
+    // Add Python gitignore if needed
+    try {
+      const gitignoreUpdated = addPythonGitignore(cwd);
+      if (gitignoreUpdated) {
+        logger.info('Added Python gitignore rules to .gitignore');
+      }
+    } catch (error) {
+      // Don't fail installation if gitignore update fails
+      logger.warn('Could not update .gitignore (this is optional)');
+    }
 
     // Next steps
     console.log();
