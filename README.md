@@ -153,7 +153,7 @@ Each rule includes:
 - **96 Color Palettes** - Industry-specific palettes for SaaS, E-commerce, Healthcare, Fintech, Beauty, etc.
 - **57 Font Pairings** - Curated typography combinations with Google Fonts imports
 - **25 Chart Types** - Recommendations for dashboards and analytics
-- **13 Tech Stacks** - React, Next.js, Astro, Vue, Nuxt.js, Nuxt UI, Svelte, SwiftUI, React Native, Flutter, HTML+Tailwind, shadcn/ui, Jetpack Compose
+- **15 Tech Stacks** - React, Next.js, Astro, Vue, Nuxt.js, Nuxt UI, Svelte, SwiftUI, React Native, Flutter, HTML+Tailwind, shadcn/ui, Jetpack Compose, Blazor, Razor Pages
 - **99 UX Guidelines** - Best practices, anti-patterns, and accessibility rules
 - **100 Reasoning Rules** - Industry-specific design system generation (NEW in v2.0)
 
@@ -374,6 +374,7 @@ The skill provides stack-specific guidelines for:
 | **iOS** | SwiftUI |
 | **Android** | Jetpack Compose |
 | **Cross-Platform** | React Native, Flutter |
+| **.NET** | Blazor, Razor Pages |
 
 Just mention your preferred stack in the prompt, or let it default to HTML + Tailwind.
 

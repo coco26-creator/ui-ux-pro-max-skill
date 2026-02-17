@@ -111,7 +111,7 @@ Get implementation-specific best practices. If user doesn't specify a stack, **d
 python3 {{SCRIPT_PATH}} "<keyword>" --stack html-tailwind
 ```
 
-Available stacks: `html-tailwind`, `react`, `nextjs`, `vue`, `svelte`, `swiftui`, `react-native`, `flutter`, `shadcn`, `jetpack-compose`
+Available stacks: `html-tailwind`, `react`, `nextjs`, `vue`, `svelte`, `swiftui`, `react-native`, `flutter`, `shadcn`, `jetpack-compose`, `blazor`, `razor-pages`
 
 ---
 
@@ -146,6 +146,8 @@ Available stacks: `html-tailwind`, `react`, `nextjs`, `vue`, `svelte`, `swiftui`
 | `flutter` | Widgets, State, Layout, Theming |
 | `shadcn` | shadcn/ui components, theming, forms, patterns |
 | `jetpack-compose` | Composables, Modifiers, State Hoisting, Recomposition |
+| `blazor` | Components, State, Rendering, Forms, Layout, JS Interop |
+| `razor-pages` | HTMX, Forms, Layout, Tag Helpers, Progressive Enhancement |
 
 ---
 
