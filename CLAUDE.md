@@ -59,6 +59,21 @@ cli/                              # CLI installer (uipro-cli on npm)
 
 The search engine uses BM25 ranking combined with regex matching. Domain auto-detection is available when `--domain` is omitted.
 
+## Stitch MCP Integration
+
+The skill integrates with **Stitch** (Google's UI design generation MCP server) as an optional Step 5 in the workflow. After generating a design system, Stitch can create visual screen mockups from text prompts.
+
+**Stitch tools used:**
+- `mcp__stitch__create_project` — Create a project container
+- `mcp__stitch__generate_screen_from_text` — Generate screens from design system output
+- `mcp__stitch__edit_screens` — Refine existing screens
+- `mcp__stitch__generate_variants` — Explore alternative designs
+- `mcp__stitch__list_projects` / `mcp__stitch__list_screens` / `mcp__stitch__get_screen` — Browse existing work
+
+The Stitch integration is documented in:
+- `src/ui-ux-pro-max/templates/base/skill-content.md` (template source)
+- `.claude/skills/ui-ux-pro-max/SKILL.md` (generated skill file)
+
 ## Sync Rules
 
 **Source of Truth:** `src/ui-ux-pro-max/`

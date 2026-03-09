@@ -1,6 +1,6 @@
 ---
 name: ui-ux-pro-max
-description: "UI/UX design intelligence. 50 styles, 21 palettes, 50 font pairings, 20 charts, 9 stacks (React, Next.js, Vue, Svelte, SwiftUI, React Native, Flutter, Tailwind, shadcn/ui). Actions: plan, build, create, design, implement, review, fix, improve, optimize, enhance, refactor, check UI/UX code. Projects: website, landing page, dashboard, admin panel, e-commerce, SaaS, portfolio, blog, mobile app, .html, .tsx, .vue, .svelte. Elements: button, modal, navbar, sidebar, card, table, form, chart. Styles: glassmorphism, claymorphism, minimalism, brutalism, neumorphism, bento grid, dark mode, responsive, skeuomorphism, flat design. Topics: color palette, accessibility, animation, layout, typography, font pairing, spacing, hover, shadow, gradient. Integrations: shadcn/ui MCP for component search and examples."
+description: "UI/UX design intelligence. 50 styles, 21 palettes, 50 font pairings, 20 charts, 9 stacks (React, Next.js, Vue, Svelte, SwiftUI, React Native, Flutter, Tailwind, shadcn/ui). Actions: plan, build, create, design, implement, review, fix, improve, optimize, enhance, refactor, check UI/UX code. Projects: website, landing page, dashboard, admin panel, e-commerce, SaaS, portfolio, blog, mobile app, .html, .tsx, .vue, .svelte. Elements: button, modal, navbar, sidebar, card, table, form, chart. Styles: glassmorphism, claymorphism, minimalism, brutalism, neumorphism, bento grid, dark mode, responsive, skeuomorphism, flat design. Topics: color palette, accessibility, animation, layout, typography, font pairing, spacing, hover, shadow, gradient. Integrations: shadcn/ui MCP for component search and examples. Stitch MCP for visual screen generation, mockups, and design variants."
 ---
 
 # UI/UX Pro Max - Design Intelligence
@@ -211,6 +211,65 @@ python3 skills/ui-ux-pro-max/scripts/search.py "<keyword>" --stack html-tailwind
 
 Available stacks: `html-tailwind`, `react`, `nextjs`, `vue`, `svelte`, `swiftui`, `react-native`, `flutter`, `shadcn`, `jetpack-compose`
 
+### Step 5: Generate Visual Screens with Stitch (REQUIRED)
+
+**Always use Stitch** to generate visual UI screen mockups from the design system output. This is a core part of the workflow — every UI/UX task should produce visual screens via Stitch before moving to code implementation.
+
+**5a. Create a Stitch project** (once per project):
+```
+Use mcp__stitch__create_project with title: "<Project Name>"
+```
+Save the returned `projectId` for all subsequent calls.
+
+**5b. Generate screens from design system** — construct a detailed prompt from Steps 2-4 output:
+```
+Use mcp__stitch__generate_screen_from_text with:
+- projectId: <project_id>
+- prompt: <design system prompt — see format below>
+- deviceType: DESKTOP or MOBILE (match user's target)
+```
+
+**Required prompt format for Stitch** — always include ALL of these from the design system output:
+```
+Design a [product type] [page type] with:
+- Style: [UI style from design system] (e.g., "Glassmorphism with frosted glass cards")
+- Colors: Primary [hex], Secondary [hex], Background [hex], Text [hex], CTA [hex]
+- Typography: [heading font] for headings, [body font] for body
+- Layout: [landing pattern from design system] (e.g., "Hero-centric with floating navbar")
+- Sections: [list all page sections] (e.g., "hero, features grid, testimonials, pricing, CTA footer")
+- Effects: [key effects from design system] (e.g., "Subtle hover animations, soft shadows, smooth transitions")
+- Anti-patterns to avoid: [from design system] (e.g., "No emoji icons, no layout-shifting hovers")
+```
+
+**5c. Refine screens** — after reviewing the generated screen, iterate:
+```
+Use mcp__stitch__edit_screens with:
+- projectId: <project_id>
+- selectedScreenIds: [<screen_id>]
+- prompt: "<specific changes based on user feedback or design system refinements>"
+```
+
+**5d. Explore design variants** — generate alternatives for user to choose from:
+```
+Use mcp__stitch__generate_variants with:
+- projectId: <project_id>
+- selectedScreenIds: [<screen_id>]
+- prompt: "<what to explore>"
+- variantOptions: { creativeRange: "EXPLORE", variantCount: 3, aspects: ["LAYOUT", "COLOR_SCHEME"] }
+```
+
+**5e. Review screens** — retrieve and present screens to the user:
+```
+Use mcp__stitch__list_screens with projectId to see all screens
+Use mcp__stitch__get_screen with name, projectId, screenId to get a specific screen's details
+```
+
+**Then:** Present the Stitch screens to the user, get feedback, and implement the approved design in code.
+
+### Step 6: Implement the Design
+
+After the user approves the Stitch visual screens, implement the design in code using the design system + stack guidelines from Steps 2-4.
+
 ---
 
 ## Search Reference
@@ -281,7 +340,27 @@ python3 skills/ui-ux-pro-max/scripts/search.py "elegant luxury serif" --domain t
 python3 skills/ui-ux-pro-max/scripts/search.py "layout responsive form" --stack html-tailwind
 ```
 
-**Then:** Synthesize design system + detailed searches and implement the design.
+### Step 5: Generate Visual Screens with Stitch
+
+```
+mcp__stitch__create_project with title: "Serenity Spa" → get projectId
+
+mcp__stitch__generate_screen_from_text with:
+- projectId: <project_id>
+- deviceType: DESKTOP
+- prompt: "Design a beauty spa landing page with:
+  - Style: Soft Gradient with glassmorphism cards
+  - Colors: Primary #D4A574, Secondary #8B6F5C, Background #FFF8F0, Text #2D1B0E
+  - Typography: Playfair Display for headings, Lato for body
+  - Layout: Hero-centric with floating navbar
+  - Sections: Hero with CTA, services grid, testimonials, booking form, footer
+  - Effects: Subtle hover animations, soft shadows, smooth transitions
+  - Avoid: No emoji icons, no layout-shifting hovers"
+```
+
+### Step 6: Implement
+
+Present Stitch screens to user, get approval, implement in code.
 
 ---
 
