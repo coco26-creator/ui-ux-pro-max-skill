@@ -339,6 +339,14 @@ Use the slash command to invoke the skill:
 /ui-ux-pro-max Build a landing page for my SaaS product
 ```
 
+### Kiro
+
+Type `/` in chat to see available commands, then select `ui-ux-pro-max`:
+
+```
+/ui-ux-pro-max Build a landing page for my SaaS product
+```
+
 ### GitHub Copilot
 
 In VS Code with Copilot, type `/` in chat to see available prompts, then select `ui-ux-pro-max`:
